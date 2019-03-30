@@ -4,8 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-django = "*"
-django-rest-framework = "*"
+flask = "*"
+latex = "*"
 
 [dev-packages]
 pytest = "*"

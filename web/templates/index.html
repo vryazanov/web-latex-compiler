@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <link href="https://fonts.googleapis.com/css?family=Germania+One" rel="stylesheet">
+    <style>
+      #container {
+        margin: auto;
+        width: 50%;
+        margin-top: 150px;
+      }
+      #text {
+        font-size: 30px;
+        font-family: 'Germania One', cursive;
+      }
+      .bash-container {
+        margin-top: 50px;
+        background: #f8f8f8;
+        overflow: auto;
+        width: auto;
+        border: solid gray;
+        border-width: .1em .1em .1em .8em;
+        padding: .2em .6em;
+      }
+      .bash-line {
+        margin: 0;
+        line-height: 125%;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <div id="text"></div>
+      <div class="bash-container">
+        <pre class="bash-line">curl -O -F <span style="color: #4e9a06">&#39;file=@hello.latex&#39;</span> -X POST http://127.0.0.1:8000/upload</pre>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function(){
+        var i = 0;
+        var txt = 'Compile your LaTeX files online.';
+        var speed = 75;
+
+        function typeWriter() {
+          if (i < txt.length) {
+            document.getElementById("text").innerHTML += txt.charAt(i);
+            i++;
+            setTimeout(typeWriter, speed);
+          };
+        };
+
+        typeWriter();
+      });
+    </script>
+
+  </body>
+</html>
