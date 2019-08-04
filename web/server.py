@@ -1,7 +1,6 @@
 import io
 
 import flask
-import latex
 
 import web.pool
 
@@ -18,16 +17,17 @@ def index():
 @app.route('/upload', methods=('POST',))
 def upload():
     _file = flask.request.files['file']
-    pdf = latex.build_pdf(io.BytesIO(_file.stream.read()))
+    pdf = pool.apply(io.BytesIO(_file.stream.read()))
     return flask.Response(pdf.readb(), mimetype='application/pdf')
 
 
 @app.route('/upload-zip', methods=('POST',))
 def upload_zip():
-    # Process zip files here
-    _file = flask.request.files['file']
-    _bytes = io.BytesIO(_file.stream.read())
-    return flask.jsonify({'result_id': pool.apply(_bytes)})
+    entry = flask.request.form['entry']
+    bytes_ = flask.request.files['file'].stream.read()
+    return flask.jsonify({
+        'result_id': pool.apply_zip(entry, io.BytesIO(bytes_))
+    })
 
 
 @app.route('/result/<result_id>', methods=('GET',))

@@ -1,9 +1,13 @@
 import io
+import pathlib
 
 import pytest
 
 import web.pool
 import web.server
+
+
+samples_dir = pathlib.Path(__file__).parent / 'samples'
 
 
 @pytest.fixture
@@ -17,10 +21,12 @@ def pool():
 
 
 @pytest.fixture
-def valid_latex_file():
-    return io.BytesIO(
-        br"\documentclass{article}"
-        br"\begin{document}"
-        br"Hello, world!"
-        br"\end{document}"
-    )
+def latex_file():
+    sample_path = samples_dir / 'hello.latex'
+    return io.BytesIO(sample_path.read_bytes())
+
+
+@pytest.fixture
+def latex_zip():
+    sample_path = samples_dir / 'multiple.zip'
+    return './multiple/main.tex', io.BytesIO(sample_path.read_bytes())
