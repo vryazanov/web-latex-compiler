@@ -27,9 +27,8 @@ def upload():
 def upload_zip():
     entry = flask.request.form['entry']
     bytes_ = flask.request.files['file'].stream.read()
-    return flask.jsonify({
-        'result_id': pool.apply_zip(entry, io.BytesIO(bytes_))
-    })
+    result_id = pool.apply_zip(entry, io.BytesIO(bytes_))
+    return flask.jsonify({'result_id': result_id})
 
 
 @app.route('/result/<result_id>', methods=('GET',))
