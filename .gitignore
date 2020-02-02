@@ -2,5 +2,11 @@
 .pyc
 __pycache__
 
+# Deployment
+terraform/
+
 # IDE
 .vscode
+
+# Media
+media/

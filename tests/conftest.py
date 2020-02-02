@@ -3,21 +3,30 @@ import pathlib
 
 import pytest
 
-import web.pool
-import web.server
+import web
 
 
 samples_dir = pathlib.Path(__file__).parent / 'samples'
 
 
 @pytest.fixture
-def client():
-    yield web.server.app.test_client()
+def app():
+    return web.create_app()
+
+
+@pytest.fixture(autouse=True)
+def session(app):
+    with app.app_context():
+        app.db.create_all()
+        yield app.db.session
+        app.db.session.close()
+        app.db.drop_all()
 
 
 @pytest.fixture
-def pool():
-    return web.pool.LatexPool()
+def client(app):
+    with app.test_client() as test_client:
+        yield test_client
 
 
 @pytest.fixture

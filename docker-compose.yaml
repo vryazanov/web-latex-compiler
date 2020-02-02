@@ -1,12 +1,29 @@
-version: '3'
+version: '3.4'
 services:
   web:
-    build: .
+    build:
+      context: .
+      target: tests
+    entrypoint: ""
     command: python -m flask run --host=0.0.0.0
     environment:
       FLASK_APP: web/server.py
-      FLASK_ENV: development
+      FLASK_CONFIG: web.configs.local.LocalConfig
+      SQLALCHEMY_DATABASE_URI: postgres://web:web@pg/web
+      GOOGLE_APPLICATION_CREDENTIALS: ./terraform/.secrets/credentials.json
+    depends_on:
+      - pg
     ports:
       - 5000:5000
     volumes:
       - .:/app
+  pg:
+    image: postgres:11
+    environment:
+      POSTGRES_DB: web
+      POSTGRES_USER: web
+      POSTGRES_PASSWORD: web 
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+volumes:
+  pg_data: null

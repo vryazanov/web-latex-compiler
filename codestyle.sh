@@ -2,4 +2,4 @@
 
 flake8 web/
 
-isort --check-only --lines-after-imports 2 --quiet web/**/*.py
+isort --lines-after-imports 2 --apply -y --quiet **/*.py

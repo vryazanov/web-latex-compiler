@@ -31,7 +31,7 @@
     <div id="container">
       <div id="text"></div>
       <div class="bash-container">
-        <pre class="bash-line">curl -O -F <span style="color: #4e9a06">&#39;file=@hello.latex&#39;</span> -X POST http://127.0.0.1:8000/upload</pre>
+        <pre class="bash-line">curl -o hello.pdf -F <span style="color: #4e9a06">&#39;file=@hello.latex&#39;</span> -X POST {{upload}}</pre>
       </div>
     </div>
 

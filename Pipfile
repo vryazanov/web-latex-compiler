@@ -6,6 +6,14 @@ name = "pypi"
 [packages]
 flask = "*"
 latex = "*"
+gunicorn = "*"
+flask-script = "*"
+flask-sqlalchemy = "*"
+google-cloud-storage = "*"
+flask-migrate = "*"
+"psycopg2-binary" = "*"
+google-cloud-pubsub = "*"
+grpcio = "*"
 
 [dev-packages]
 pytest = "*"
