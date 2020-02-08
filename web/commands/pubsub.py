@@ -56,4 +56,4 @@ def listen(sleep, batch_size):
             logger.warning('Async result instance is not found.')
             continue
 
-        process_async_result(flask.current_app.db.session, msg)
+        process_async_result(flask.current_app.db.session, async_result)

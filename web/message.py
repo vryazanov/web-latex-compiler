@@ -26,7 +26,7 @@ class CloudMessage(BaseMessage):
         self._publisher = google.cloud.pubsub.PublisherClient()
 
     def push(self, data: dict):
-        self._publisher.publish(self._topic, bytes(json.dumps(data)))
+        self._publisher.publish(self._topic, json.dumps(data).encode('utf-8'))
 
     def polling(self, sleep=3, batch_size=5, limit=None):
         while True:
