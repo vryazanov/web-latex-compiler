@@ -17,3 +17,11 @@ push/%:	# web or worker
 codestyle:
 	@echo "Run code style checker"
 	@pipenv run ./codestyle.sh
+
+.PHONY: deploy
+deploy:
+	@make push/worker
+	@make push/web
+	cd ./terraform && terraform taint google_compute_instance.default
+	cd ./terraform && terraform taint google_cloud_run_service.web
+	cd ./terraform && terraform apply -auto-approve
