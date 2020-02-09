@@ -4,10 +4,10 @@ services:
     build:
       context: .
       target: tests
-    entrypoint: ""
     command: python -m flask run --host=0.0.0.0
     environment:
-      FLASK_APP: web/server.py
+      FLASK_APP: web:create_app()
+      FLASK_ENV: development
       FLASK_CONFIG: web.configs.local.LocalConfig
       SQLALCHEMY_DATABASE_URI: postgres://web:web@pg/web
       GOOGLE_APPLICATION_CREDENTIALS: ./terraform/.secrets/credentials.json

@@ -1,5 +1,7 @@
 import tempfile
 
+import flask
+
 import web.db
 
 
@@ -7,8 +9,12 @@ def test_upload(app, client, latex_file):
     data = {'file': (latex_file, 'test.latex')}
     response = client.post(
         '/upload', data=data, content_type='multipart/form-data')
+
     async_result = web.db.AsyncResult.query.first()
-    assert response.data.decode().endswith(async_result.token)
+
+    assert response.status_code == 302
+    assert response.headers['Location'].endswith(
+        flask.url_for('result', token=async_result.token))
 
 
 def test_result_wrong_token(app, client):
@@ -23,7 +29,7 @@ def test_result_not_processed(app, client, session):
     session.commit()
 
     response = client.get(f'/result/{async_result.token}')
-    assert response.status_code == 102
+    assert response.status_code == 302
 
 
 def test_result_processed(app, client, session):

@@ -1,4 +1,5 @@
 import tempfile
+import time
 import urllib.parse
 
 import flask
@@ -7,8 +8,12 @@ import web.db
 
 
 def index():
-    return flask.render_template('index.html', upload=urllib.parse.urljoin(
-        flask.request.url_root, '/upload'))
+    upload_url = urllib.parse.urljoin(
+        flask.request.url, flask.url_for('upload'))
+    result_url = urllib.parse.urljoin(
+        flask.request.url, flask.url_for('result', token=''))
+    return flask.render_template(
+        'index.html', upload=upload_url, result=result_url)
 
 
 def upload():
@@ -23,7 +28,7 @@ def upload():
     flask.current_app.storage.put_object(async_result.origin_key, file_)
     flask.current_app.message.push({'async_result_id': async_result.id})
 
-    return flask.Response(flask.url_for('result', token=async_result.token))
+    return flask.redirect(flask.url_for('result', token=async_result.token))
 
 
 def result(token):
@@ -34,7 +39,8 @@ def result(token):
         return flask.Response('File is not found.', status=404)
 
     if not async_result.target_key:
-        return flask.Response('File is not processed yet.', status=102)
+        time.sleep(flask.current_app.config['RESULT_MAX_WAITING_SECONDS'])
+        return flask.redirect(flask.request.url)
 
     pdf = tempfile.TemporaryFile()
     flask.current_app.storage.get_object(
