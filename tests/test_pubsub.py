@@ -6,10 +6,10 @@ import web.commands.pubsub
 import web.db
 
 
-def test_async_result_processing(app, session, latex_file):
+def test_async_result_processing_simple(app, session, latex_file):
     async_result = web.db.AsyncResult(
         token='test-token',
-        origin_key='test/hello.txt'
+        origin_key='test/hello.latex'
     )
     app.storage.put_object(async_result.origin_key, latex_file)
 
@@ -19,4 +19,4 @@ def test_async_result_processing(app, session, latex_file):
     app.storage.get_object(async_result.target_key, result)
 
     assert result.getvalue()
-    assert async_result.target_key == 'test/hello.txt.pdf'
+    assert async_result.target_key == 'test/hello.pdf'

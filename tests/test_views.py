@@ -7,8 +7,8 @@ def test_upload(app, client, latex_file):
     data = {'file': (latex_file, 'test.latex')}
     response = client.post(
         '/upload', data=data, content_type='multipart/form-data')
-    assert web.db.AsyncResult.query.filter_by(
-        token=response.data.decode())
+    async_result = web.db.AsyncResult.query.first()
+    assert response.data.decode().endswith(async_result.token)
 
 
 def test_result_wrong_token(app, client):

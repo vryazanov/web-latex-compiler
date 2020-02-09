@@ -23,7 +23,7 @@ def upload():
     flask.current_app.storage.put_object(async_result.origin_key, file_)
     flask.current_app.message.push({'async_result_id': async_result.id})
 
-    return flask.Response(async_result.token)
+    return flask.Response(flask.url_for('result', token=async_result.token))
 
 
 def result(token):

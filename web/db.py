@@ -17,4 +17,5 @@ class AsyncResult(db.Model):
         self.origin_key = f'{self.token}/{filename}'
 
     def generate_target_key(self):
-        self.target_key = self.origin_key + '.pdf'
+        path, _ = self.origin_key.rsplit('.')  # take path without extension
+        self.target_key = f'{path}.pdf'
