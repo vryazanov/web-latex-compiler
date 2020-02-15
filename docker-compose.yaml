@@ -5,18 +5,36 @@ services:
       context: .
       target: tests
     command: python -m flask run --host=0.0.0.0
-    environment:
+    environment: &default-env
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_CHANNEL: dev-channel
       FLASK_APP: web:create_app()
       FLASK_ENV: development
       FLASK_CONFIG: web.configs.local.LocalConfig
       SQLALCHEMY_DATABASE_URI: postgres://web:web@pg/web
-      GOOGLE_APPLICATION_CREDENTIALS: ./terraform/.secrets/credentials.json
+      GOOGLE_APPLICATION_CREDENTIALS: ./terraform/.secrets/google-cloud.json
     depends_on:
       - pg
+      - redis
     ports:
       - 5000:5000
     volumes:
       - .:/app
+  worker:
+    build:
+      context: .
+      target: tests
+    command: python manage.py pubsub listen --sleep 3
+    environment: *default-env
+    depends_on:
+      - pg
+      - redis
+    volumes:
+      - .:/app
+  redis:
+    image: redis:3
   pg:
     image: postgres:11
     environment:
@@ -25,5 +43,7 @@ services:
       POSTGRES_PASSWORD: web 
     volumes:
       - pg_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
 volumes:
   pg_data: null

@@ -44,11 +44,10 @@ def process_async_result(session, async_result):
     session.commit()
 
 
-@PubSubCommand.option('--batch-size', type=int, required=True)
 @PubSubCommand.option('--sleep', type=int, required=True)
-def listen(sleep, batch_size):
+def listen(sleep):
 
-    for msg in flask.current_app.message.polling(sleep, batch_size):
+    for msg in flask.current_app.message.polling(sleep):
         logger.info(f'Received a message: {msg}.')
         async_result = web.db.AsyncResult.query.get(msg['async_result_id'])
 

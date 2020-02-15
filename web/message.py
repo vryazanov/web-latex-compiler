@@ -1,24 +1,26 @@
 import json
 import logging
-import queue
 import time
 
 import google.api_core.exceptions
 import google.cloud.pubsub
+import redis
 
 
 LOGGER = logging.getLogger(__name__)
 
 
 class BaseMessage:
-    def push(self, data):
+    def push(self, data: dict):
         raise NotImplementedError
 
-    def polling(self, *args, **kwargs):
+    def polling(self, sleep: int):
         raise NotImplementedError
 
 
 class CloudMessage(BaseMessage):
+    BATCH_SIZE = 5
+
     def __init__(self, project: str, topic: str, subscription: str):
         self._topic = f'projects/{project}/topics/{topic}'
         self._subscription = f'projects/{project}/subscriptions/{subscription}'
@@ -28,11 +30,11 @@ class CloudMessage(BaseMessage):
     def push(self, data: dict):
         self._publisher.publish(self._topic, json.dumps(data).encode('utf-8'))
 
-    def polling(self, sleep=3, batch_size=5, limit=None):
+    def polling(self, sleep=3):
         while True:
             try:
                 response = self._subscriber.pull(
-                    self._subscription, max_messages=batch_size)
+                    self._subscription, max_messages=self.BATCH_SIZE)
             except google.api_core.exceptions.DeadlineExceeded:
                 time.sleep(sleep)
                 continue
@@ -51,15 +53,22 @@ class CloudMessage(BaseMessage):
                 self._subscriber.acknowledge(self._subscription, ack_ids)
 
 
-class LocalMessage(BaseMessage):
-    def __init__(self):
-        self._queue = queue.Queue()
+class RedisMessage(BaseMessage):
+    def __init__(self, host: str, port: int, db: int, channel: str):
+        self._redis = redis.Redis(host=host, port=port, db=db)
+        self._channel = channel
 
     def push(self, data: dict):
-        self._queue.put(json.dumps(data))
+        self._redis.publish(self._channel, json.dumps(data))
 
     def polling(self, sleep=3):
+        pubsub = self._redis.pubsub()
+        pubsub.subscribe(self._channel)
+
         while True:
-            if not self._queue.empty():
-                yield json.loads(self._queue.get())
+            message = pubsub.get_message()
+
+            if message and message['type'] == 'message':
+                yield json.loads(message['data'].decode('utf-8'))
+
             time.sleep(sleep)

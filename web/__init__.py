@@ -25,9 +25,12 @@ def create_app(config_path=os.environ['FLASK_CONFIG']):
     app.db = web.db.db
     app.db.init_app(app)
 
-    app.add_url_rule('/', 'index', web.views.index)
-    app.add_url_rule('/upload', 'upload', web.views.upload, methods=('POST',))
-    app.add_url_rule('/result/<token>', 'result', web.views.result)
+    app.add_url_rule(
+        '/', 'index', web.views.index)
+    app.add_url_rule(
+        '/upload', 'upload', web.views.upload, methods=('POST',))
+    app.add_url_rule(
+        '/result/<token>', 'result', web.views.result, methods=('POST', 'GET'))
 
     app.storage = get_storage(app.config)
     app.message = get_message(app.config)
