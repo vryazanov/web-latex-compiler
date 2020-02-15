@@ -1,7 +1,3 @@
-variable "gc_dredentials" {
-  type = string
-}
-
 variable "project_id" {
   type = string
 }

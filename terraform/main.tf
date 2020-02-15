@@ -3,7 +3,7 @@ terraform {
   backend "gcs" {
     bucket      = "web-latex-compiler-tf-state"
     prefix      = "terraform/state"
-    credentials = var.gc_dredentials
+    credentials = ".secrets/google-cloud.json"
   }
 }
 
@@ -16,7 +16,7 @@ resource "random_id" "db_name_suffix" {
 }
 
 provider "google" {
-  credentials = var.gc_dredentials
+  credentials = ".secrets/google-cloud.json"
   project     = var.project_id
 }
 
@@ -215,7 +215,7 @@ resource "google_compute_instance" "default" {
     sudo apt-get update
     sudo apt-get install -y docker-ce docker-ce-cli containerd.io
 
-    sudo echo '${file(".secrets/credentials.json")}' > ~/google-cloud-credentials.json
+    sudo echo '${file(".secrets/google-cloud.json")}' > ~/google-cloud-credentials.json
     sudo cat /root/google-cloud-credentials.json | sudo docker login -u _json_key --password-stdin https://eu.gcr.io
     sudo docker pull eu.gcr.io/web-latex-compiler-262817/worker:master
 
