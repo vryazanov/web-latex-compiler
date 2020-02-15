@@ -3,7 +3,9 @@
 __pycache__
 
 # Deployment
-terraform/
+terraform/terraform.tfvars.json
+terraform/.terraform
+terraform/.secrets
 
 # IDE
 .vscode
