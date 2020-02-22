@@ -1,22 +1,21 @@
-import io
-
-import latex
-
 import web.commands.pubsub
 import web.db
 
 
-def test_async_result_processing_simple(app, session, latex_file):
+def test_persistent_latex_file(app, session, latex_file):
     async_result = web.db.AsyncResult(
         token='test-token',
         origin_key='test/hello.latex'
     )
     app.storage.put_object(async_result.origin_key, latex_file)
 
-    web.commands.pubsub.process_async_result(session, async_result)
-
-    result = io.BytesIO()
-    app.storage.get_object(async_result.target_key, result)
+    persistent_latex_file = web.commands.pubsub.PersistentLatexFile(
+        klass=web.commands.pubsub.LatexFile,
+        session=session,
+        storage=app.storage,
+        result=async_result
+    )
+    result = persistent_latex_file.save()
 
     assert result.getvalue()
     assert async_result.target_key == 'test/hello.pdf'

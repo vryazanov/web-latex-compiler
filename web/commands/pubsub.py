@@ -1,11 +1,14 @@
 import io
 import logging
+import typing
 
 import flask
 import flask_script
 import latex
+from sqlalchemy.orm.session import Session
 
 import web.db
+import web.storage
 
 
 logger = logging.getLogger(__name__)
@@ -27,21 +30,48 @@ PubSubCommand = flask_script.Manager(help='Run latex files compilation')
 #                 entry_path.open(), texinputs=[str(entry_path.parent)])
 
 
-def process_async_result(session, async_result):
-    async_result.generate_target_key()
+class BaseLatexFile:
+    def save(self) -> io.BytesIO:
+        raise NotImplementedError
 
-    origin, target = io.BytesIO(), io.BytesIO()
-    flask.current_app.storage.get_object(async_result.origin_key, origin)
 
-    pdf = latex.build_pdf(origin.getvalue())
-    pdf.save_to(target)
+class LatexFile(BaseLatexFile):
+    def __init__(self, stream: io.RawIOBase):
+        self._stream = stream
 
-    target.seek(0)
+    def save(self):
+        target = io.BytesIO()
+        pdf = latex.build_pdf(self._stream.getvalue())
+        pdf.save_to(target)
+        target.seek(0)
+        return target
 
-    flask.current_app.storage.put_object(async_result.target_key, target)
 
-    session.add(async_result)
-    session.commit()
+class LatexFileFromArchive(BaseLatexFile):
+    pass
+
+
+class PersistentLatexFile(BaseLatexFile):
+    def __init__(
+        self, klass: typing.Type[BaseLatexFile], session: Session,
+        storage: web.storage.BaseStorage, result: web.db.AsyncResult
+    ):
+        self._klass = klass
+        self._session = session
+        self._storage = storage
+        self._result = result
+
+    def save(self):
+        origin = io.BytesIO()
+        self._storage.get_object(self._result.origin_key, origin)
+
+        instance = self._klass(origin)
+        target = instance.save()
+
+        self._result.generate_target_key()
+        self._storage.put_object(self._result.target_key, target)
+        self._session.commit()
+        return target
 
 
 @PubSubCommand.option('--sleep', type=int, required=True)
@@ -55,4 +85,10 @@ def listen(sleep):
             logger.warning('Async result instance is not found.')
             continue
 
-        process_async_result(flask.current_app.db.session, async_result)
+        latex_file = PersistentLatexFile(
+            klass=LatexFile,
+            session=flask.current_app.db.session,
+            storage=flask.current_app.storage,
+            result=async_result
+        )
+        latex_file.save()
